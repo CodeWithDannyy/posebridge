@@ -1,4 +1,4 @@
-"""Compare camera backends and pixel formats to find the best real frame rate."""
+#Compare camera backends and pixel formats to find the best real frame rate.#
 import time
 
 import cv2
