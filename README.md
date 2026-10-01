@@ -33,4 +33,4 @@ Python 3.12, OpenCV, MediaPipe, PyTorch, NumPy, Unity 6, C#
 
 ## Limitations
 
-To be filled in honestly as the project develops.
+To be filled in as the project develops.
