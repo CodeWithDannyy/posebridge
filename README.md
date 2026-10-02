@@ -21,7 +21,7 @@ Every packet carries a capture timestamp, which makes end-to-end latency measura
 
 ## Milestones
 
-- [ ] **M0**: Keypoints on screen (webcam feed with a skeleton drawn on it, FPS printed)
+- [x] **M0**: Keypoints on screen (webcam feed with a skeleton drawn on it, FPS printed)
 - [ ] **M1**: End-to-end: Unity cubes move when I move
 - [ ] **M2**: Real humanoid avatar, with smoothing
 - [ ] **M3**: Squat analyser: knee angle, valgus flag, rep counter, score on a HUD
