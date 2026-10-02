@@ -1,4 +1,4 @@
-"""MediaPipe's 33-landmark body layout and a function to draw it."""
+#MediaPipe's 33-landmark body layout and a function to draw it.
 import cv2
 
 # Landmark indices we use (MediaPipe numbering). "Left" and "right" are the
@@ -12,6 +12,18 @@ L_KNEE, R_KNEE = 25, 26
 L_ANKLE, R_ANKLE = 27, 28
 L_HEEL, R_HEEL = 29, 30
 L_FOOT, R_FOOT = 31, 32
+
+# Names for all 33 landmarks, in MediaPipe's order (index = position in list).
+LANDMARK_NAMES = [
+    "nose", "left_eye_inner", "left_eye", "left_eye_outer",
+    "right_eye_inner", "right_eye", "right_eye_outer", "left_ear", "right_ear",
+    "mouth_left", "mouth_right", "left_shoulder", "right_shoulder",
+    "left_elbow", "right_elbow", "left_wrist", "right_wrist",
+    "left_pinky", "right_pinky", "left_index", "right_index",
+    "left_thumb", "right_thumb", "left_hip", "right_hip",
+    "left_knee", "right_knee", "left_ankle", "right_ankle",
+    "left_heel", "right_heel", "left_foot_index", "right_foot_index",
+]
 
 # Each bone is a pair of landmark indices.
 BONES = [
@@ -44,11 +56,11 @@ def _bone_color(a: int, b: int) -> tuple[int, int, int]:
 
 
 def draw_skeleton(frame, joints, min_visibility: float = 0.5) -> None:
-    """Draw bones and joints onto `frame` in place.
+    #Draw bones and joints onto `frame` in place.
 
-    `joints` is an array of shape (33, 4) = [x, y, z, visibility] per joint,
-    with x and y as fractions (0-1) of the image width and height.
-    """
+    #`joints` is an array of shape (33, 4) = [x, y, z, visibility] per joint,
+    #with x and y as fractions (0-1) of the image width and height.
+    
     height, width = frame.shape[:2]  # shape is (rows, cols, ...) = (height, width)
 
     def point(i: int) -> tuple[int, int]:

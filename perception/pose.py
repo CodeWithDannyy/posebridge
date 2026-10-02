@@ -1,4 +1,4 @@
-"""Pose estimation behind one small interface, so the model can be swapped."""
+#Pose estimation behind one small interface, so the model can be swapped.
 from pathlib import Path
 from typing import Protocol
 
@@ -12,17 +12,17 @@ MODEL_PATH = Path(__file__).resolve().parent.parent / "models" / "pose_landmarke
 
 
 class PoseSource(Protocol):
-    """Anything that turns a camera frame into joint positions."""
+    #Anything that turns a camera frame into joint positions.
 
     def process(self, frame_bgr: np.ndarray, timestamp_ms: int) -> np.ndarray | None:
-        """Return an array of shape (n_joints, 4) = [x, y, z, visibility], or None."""
+        #Return an array of shape (n_joints, 4) = [x, y, z, visibility], or None.
         ...
 
     def close(self) -> None: ...
 
 
 class MediaPipePose:
-    """PoseSource backed by MediaPipe's PoseLandmarker (33 joints)."""
+    #PoseSource backed by MediaPipe's PoseLandmarker (33 joints)
 
     def __init__(self, model_path: Path = MODEL_PATH) -> None:
         options = vision.PoseLandmarkerOptions(

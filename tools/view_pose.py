@@ -1,4 +1,4 @@
-"""Webcam with a skeleton drawn on you and the FPS on screen. Press q to quit."""
+#Webcam with a skeleton drawn on you and the FPS on screen. Press q to quit.
 import time
 
 import cv2
