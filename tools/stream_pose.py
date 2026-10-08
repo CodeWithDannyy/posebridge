@@ -1,9 +1,12 @@
-#Perception process: webcam -> pose -> UDP packets to Unity. Press q to quit.
+#Perception process: webcam -> pose -> (smoothing) -> UDP packets to Unity.
+#Keys in the camera window: s = toggle smoothing, q / Esc = quit.
+import argparse
 import time
 
 import cv2
 
 from perception.camera import open_camera
+from perception.filters import JointSmoother
 from perception.fps import FpsCounter
 from perception.packet import encode_packet
 from perception.pose import MediaPipePose
@@ -12,7 +15,13 @@ from perception.udp import UdpSender
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description="Stream pose packets to Unity.")
+    parser.add_argument("--no-smoothing", action="store_true", help="start with smoothing off")
+    args = parser.parse_args()
+
     pose = MediaPipePose()
+    smoother = JointSmoother()
+    smoothing = not args.no_smoothing
     sender = UdpSender()
     cap = open_camera()
     fps_counter = FpsCounter(30)
@@ -25,22 +34,32 @@ def main() -> None:
                 break
             # Wall-clock stamp: a clock Unity can also read, so latency is measurable.
             t_capture_ms = time.time() * 1000
+            # Monotonic clock (seconds) for MediaPipe's tracker and for the filter.
+            t = time.perf_counter() - start
 
-            # Monotonic clock for MediaPipe's tracker (needs ever-increasing times).
-            joints = pose.process(frame, int((time.perf_counter() - start) * 1000))
+            joints = pose.process(frame, int(t * 1000))
+            if smoothing:
+                joints = smoother(t, joints)
 
             sender.send(encode_packet(frame_index, t_capture_ms, joints))
             frame_index += 1
 
+            # The preview shows exactly what is sent.
             if joints is not None:
                 draw_skeleton(frame, joints)
             frame = cv2.flip(frame, 1)
             fps = fps_counter.tick()
-            cv2.putText(frame, f"{fps:.1f} FPS | frame {frame_index}", (10, 30),
+            status = "ON" if smoothing else "OFF"
+            cv2.putText(frame, f"{fps:.1f} FPS | smoothing {status} (s)", (10, 30),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
             cv2.imshow("PoseBridge sender", frame)
-            if cv2.waitKey(1) & 0xFF in (ord("q"), 27):
+
+            key = cv2.waitKey(1) & 0xFF
+            if key in (ord("q"), 27):
                 break
+            if key == ord("s"):
+                smoothing = not smoothing
+                smoother.reset()   # start fresh, don't blend with an old pose
     finally:
         sender.close()
         pose.close()
