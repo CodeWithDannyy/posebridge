@@ -1,16 +1,22 @@
 using UnityEngine;
 
 // Spawns one cube per pose joint and moves the cubes to follow UdpReceiver.Latest.
-// First version: deliberately naive coordinates. Step 6 fixes them.
+// Converts the packet's image coordinates into Unity world coordinates.
 public class JointCubes : MonoBehaviour
 {
     const int JointCount = 33;
     const int Stride = 4;   // numbers per joint in the packet: x, y, z, visibility
+    const int LeftHip = 23;
+    const int RightHip = 24;
 
     [SerializeField] UdpReceiver receiver;
-    [SerializeField] float scale = 10f;          // image fraction (0-1) -> Unity units
-    [SerializeField] float cubeSize = 0.25f;
-    [SerializeField] float minVisibility = 0.5f; // hide joints the model is unsure about
+    [SerializeField] float scale = 6f;            // Unity units per image height
+    [SerializeField] float imageAspect = 4f / 3f; // webcam width / height (640x480)
+    [SerializeField] bool mirror = true;          // act like a mirror, not like a photo
+    [SerializeField] bool anchorToHips = true;    // true: pose only; false: also walk around
+    [SerializeField] float depthFactor = 0f;      // 0 = flat; try 1 to see how noisy z is
+    [SerializeField] float cubeSize = 0.2f;
+    [SerializeField] float minVisibility = 0.5f;  // hide joints the model is unsure about
 
     Transform[] cubes;
 
@@ -33,21 +39,59 @@ public class JointCubes : MonoBehaviour
     {
         PosePacket packet = receiver.Latest;
         bool hasPose = packet != null && packet.tracked &&
-                       packet.joints != null && packet.joints.Length == JointCount * Stride;
+                       packet.joints != null && packet.joints.Length == JointCount * Stride &&
+                       Visible(packet.joints, LeftHip) && Visible(packet.joints, RightHip);
+
+        if (!hasPose)
+        {
+            SetAllActive(false);
+            return;
+        }
+
+        float[] j = packet.joints;
+
+        // Origin of the skeleton in image space: the midpoint of the hips, or the image centre.
+        float originX = 0.5f;
+        float originY = 0.5f;
+        if (anchorToHips)
+        {
+            originX = (j[LeftHip * Stride] + j[RightHip * Stride]) / 2f;
+            originY = (j[LeftHip * Stride + 1] + j[RightHip * Stride + 1]) / 2f;
+        }
 
         for (int i = 0; i < JointCount; i++)
         {
-            if (!hasPose || packet.joints[i * Stride + 3] < minVisibility)
+            bool show = Visible(j, i);
+            cubes[i].gameObject.SetActive(show);
+            if (show)
             {
-                cubes[i].gameObject.SetActive(false);
-                continue;
+                cubes[i].localPosition = ToUnity(j, i, originX, originY);
             }
+        }
+    }
 
-            float x = packet.joints[i * Stride];
-            float y = packet.joints[i * Stride + 1];
+    bool Visible(float[] j, int i) => j[i * Stride + 3] >= minVisibility;
 
-            cubes[i].gameObject.SetActive(true);
-            cubes[i].localPosition = new Vector3(x, y, 0f) * scale;   // z ignored for now
+    // Image space: x right, y DOWN, both 0-1 fractions of the image size.
+    // Unity space: x right, y UP, in world units.
+    Vector3 ToUnity(float[] j, int i, float originX, float originY)
+    {
+        float dx = j[i * Stride] - originX;
+        float dy = j[i * Stride + 1] - originY;
+
+        // Multiplying x by the aspect ratio makes one unit mean the same distance in x and y;
+        // without it the body would be stretched, because the image is wider than tall.
+        float x = (mirror ? -dx : dx) * imageAspect * scale;
+        float y = -dy * scale;                           // flip: image y points down
+        float z = j[i * Stride + 2] * depthFactor * scale;
+        return new Vector3(x, y, z);
+    }
+
+    void SetAllActive(bool active)
+    {
+        foreach (Transform cube in cubes)
+        {
+            cube.gameObject.SetActive(active);
         }
     }
 

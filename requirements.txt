@@ -1,0 +1,7 @@
+# Pinned: mediapipe 1.0.x ships an unsigned libmediapipe.dll that Windows
+# Smart App Control can block (WinError 4551). 0.10.21 loads fine.
+mediapipe==0.10.21
+numpy==1.26.4
+opencv-contrib-python==4.11.0.86
+pillow==12.3.0
+pytest==9.1.1

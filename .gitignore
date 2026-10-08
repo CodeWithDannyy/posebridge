@@ -19,6 +19,8 @@ __pycache__/
 /unity/*/*.csproj
 /unity/*/*.sln
 /unity/*/*.slnx
+/unity/*/Assets/_Recovery/
+/unity/*/Assets/_Recovery.meta
 /unity/*/.vs/
 
 # --- OS / editor clutter ---
