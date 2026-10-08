@@ -1,4 +1,4 @@
-"""Perception process: webcam -> pose -> UDP packets to Unity. Press q to quit."""
+#Perception process: webcam -> pose -> UDP packets to Unity. Press q to quit.
 import time
 
 import cv2

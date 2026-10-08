@@ -1,12 +1,10 @@
-"""Turn a screen recording (.mp4) into a small GIF.
+#Turn a screen recording (.mp4) into a small GIF.
 
-Usage: python -m tools.video_to_gif input.mp4 docs/m1_demo.gif [--width 800] [--fps 15] [--start 0] [--seconds 10]
+#Usage: python -m tools.video_to_gif input.mp4 docs/m1_demo.gif [--width 800] [--fps 15] [--start 0] [--seconds 10]
 
-A GIF can only hold 256 colours. Small saturated objects (like our coloured cubes)
-cover few pixels, so a naive palette drops them and the colours turn pale. We build
-ONE palette from sampled frames using MAXCOVERAGE (which keeps outlier colours),
-and map every frame to it without dithering. This also makes the file much smaller.
-"""
+#A GIF can only hold 256 colours. Small saturated objects (like our coloured cubes) cover few pixels, so a naive palette drops them and the colours turn pale. We build
+#ONE palette from sampled frames using MAXCOVERAGE (which keeps outlier colours), and map every frame to it without dithering. This also makes the file much smaller.
+
 import argparse
 
 import cv2
@@ -16,7 +14,7 @@ PALETTE_SAMPLES = 12
 
 
 def read_frames(path: str, width: int, fps: int, start: float, seconds: float):
-    """Yield resized RGB frames, keeping about `fps` of them per second."""
+    #Yield resized RGB frames, keeping about `fps` of them per second.
     cap = cv2.VideoCapture(path)
     if not cap.isOpened():
         raise SystemExit(f"Cannot open {path}")
@@ -38,7 +36,7 @@ def read_frames(path: str, width: int, fps: int, start: float, seconds: float):
 
 
 def build_palette(samples: list) -> Image.Image:
-    """Stack the sample frames into one tall image and quantize that."""
+    #Stack the sample frames into one tall image and quantize that.
     width, height = samples[0].size
     montage = Image.new("RGB", (width, height * len(samples)))
     for i, image in enumerate(samples):

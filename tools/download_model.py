@@ -1,4 +1,4 @@
-"""Download MediaPipe's pose model into models/ (skips it if already there)."""
+#Download MediaPipe's pose model into models/ (skips it if already there).
 import urllib.request
 from pathlib import Path
 

@@ -1,4 +1,4 @@
-"""Send packets to Unity over UDP."""
+#Send packets to Unity over UDP.
 import socket
 
 DEFAULT_HOST = "127.0.0.1"  # localhost: this computer only

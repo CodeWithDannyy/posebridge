@@ -1,7 +1,7 @@
-"""Debug receiver: listens for PoseBridge packets and prints stats. Ctrl+C to quit.
+#Debug receiver: listens for PoseBridge packets and prints stats. Ctrl+C to quit.
 
-Proves the Python side works before Unity is involved.
-"""
+#Proves the Python side works before Unity is involved.
+
 import socket
 import statistics
 import time
@@ -13,8 +13,7 @@ from perception.udp import DEFAULT_HOST, DEFAULT_PORT
 def main() -> None:
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind((DEFAULT_HOST, DEFAULT_PORT))
-    # A timeout lets Ctrl+C work: on Windows a socket blocked forever ignores it.
-    sock.settimeout(1.0)
+    sock.settimeout(1.0)                                               
     print(f"Listening on {DEFAULT_HOST}:{DEFAULT_PORT} ...")
 
     last_frame = None
