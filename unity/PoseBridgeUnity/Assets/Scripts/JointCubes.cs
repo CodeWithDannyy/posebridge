@@ -10,7 +10,9 @@ public class JointCubes : MonoBehaviour
     const int RightHip = 24;
 
     [SerializeField] UdpReceiver receiver;
-    [SerializeField] float scale = 6f;            // Unity units per image height
+    [SerializeField] bool useWorld = true;        // true: 3D world landmarks (metres); false: image
+    [SerializeField] float worldScale = 2.5f;     // Unity units per metre (world mode)
+    [SerializeField] float scale = 6f;            // Unity units per image height (image mode)
     [SerializeField] float imageAspect = 4f / 3f; // webcam width / height (640x480)
     [SerializeField] bool mirror = true;          // act like a mirror, not like a photo
     [SerializeField] bool anchorToHips = true;    // true: pose only; false: also walk around
@@ -49,6 +51,20 @@ public class JointCubes : MonoBehaviour
         }
 
         float[] j = packet.joints;
+        bool world = useWorld && packet.world != null && packet.world.Length == JointCount * Stride;
+        if (world)
+        {
+            for (int i = 0; i < JointCount; i++)
+            {
+                bool show = Visible(j, i);
+                cubes[i].gameObject.SetActive(show);
+                if (show)
+                {
+                    cubes[i].localPosition = WorldToUnity(packet.world, i);
+                }
+            }
+            return;
+        }
 
         // Origin of the skeleton in image space: the midpoint of the hips, or the image centre.
         float originX = 0.5f;
@@ -85,6 +101,18 @@ public class JointCubes : MonoBehaviour
         float y = -dy * scale;                           // flip: image y points down
         float z = j[i * Stride + 2] * depthFactor * scale;
         return new Vector3(x, y, z);
+    }
+
+    // MediaPipe world space: metres from the hip midpoint, x right, y DOWN, z AWAY from camera.
+    // Unity space: x right, y UP, z away from the camera (it looks along +z).
+    // So only y flips (plus x for mirror mode). Already hip-centred and already in metres:
+    // no aspect ratio, no origin to subtract.
+    Vector3 WorldToUnity(float[] w, int i)
+    {
+        float x = w[i * Stride];
+        float y = w[i * Stride + 1];
+        float z = w[i * Stride + 2];
+        return new Vector3(mirror ? -x : x, -y, z) * worldScale;
     }
 
     void SetAllActive(bool active)

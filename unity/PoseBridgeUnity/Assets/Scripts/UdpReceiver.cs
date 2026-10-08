@@ -14,13 +14,14 @@ public class PosePacket
     public int frame;
     public double t_capture_ms;   // Unix time in ms; double because it is too big for a float
     public bool tracked;
-    public float[] joints;        // flat: x0, y0, z0, vis0, x1, ...
+    public float[] joints;        // image landmarks, flat: x0, y0, z0, vis0, x1, ... (0-1 fractions)
+    public float[] world;         // world landmarks, same layout, in metres from the hip midpoint (v2)
 }
 
 // Listens for packets on a background thread and exposes the newest one to the main thread.
 public class UdpReceiver : MonoBehaviour
 {
-    const int ExpectedSchemaVersion = 1;
+    const int ExpectedSchemaVersion = 2;
 
     [SerializeField] int port = 5005;   // must match perception/udp.py
 

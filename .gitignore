@@ -21,6 +21,10 @@ __pycache__/
 /unity/*/*.slnx
 /unity/*/Assets/_Recovery/
 /unity/*/Assets/_Recovery.meta
+# Mixamo character files are downloaded by each user (see README), not redistributed.
+# Their .meta files ARE committed, so import settings and scene references survive.
+/unity/*/Assets/Characters/**/*.fbx
+/unity/*/Assets/Characters/**/*.FBX
 /unity/*/.vs/
 
 # --- OS / editor clutter ---

@@ -33,15 +33,28 @@ class MediaPipePose:
         self._landmarker = vision.PoseLandmarker.create_from_options(options)
 
     def process(self, frame_bgr: np.ndarray, timestamp_ms: int) -> np.ndarray | None:
+        image, _ = self.process_with_world(frame_bgr, timestamp_ms)
+        return image
+
+    def process_with_world(
+        self, frame_bgr: np.ndarray, timestamp_ms: int
+    ) -> tuple[np.ndarray | None, np.ndarray | None]:
+        """Return (image, world), each (33, 4) = [x, y, z, visibility], or (None, None).
+
+        image: x, y as fractions of the image (y down), z rough relative depth.
+        world: x, y, z in METRES, origin at the midpoint of the hips,
+               same axis directions as the image (x right, y down, z away from camera).
+        """
         rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
         result = self._landmarker.detect_for_video(mp_image, timestamp_ms)
         if not result.pose_landmarks:
-            return None
-        return np.array(
-            [[lm.x, lm.y, lm.z, lm.visibility] for lm in result.pose_landmarks[0]],
-            dtype=np.float32,
-        )
+            return None, None
+        return _to_array(result.pose_landmarks[0]), _to_array(result.pose_world_landmarks[0])
 
     def close(self) -> None:
         self._landmarker.close()
+
+
+def _to_array(landmarks) -> np.ndarray:
+    return np.array([[lm.x, lm.y, lm.z, lm.visibility] for lm in landmarks], dtype=np.float32)

@@ -20,7 +20,8 @@ def main() -> None:
     args = parser.parse_args()
 
     pose = MediaPipePose()
-    smoother = JointSmoother()
+    smoother = JointSmoother()         # image landmarks (fractions of the image)
+    world_smoother = JointSmoother()   # world landmarks (metres); same settings for now
     smoothing = not args.no_smoothing
     sender = UdpSender()
     cap = open_camera()
@@ -37,11 +38,12 @@ def main() -> None:
             # Monotonic clock (seconds) for MediaPipe's tracker and for the filter.
             t = time.perf_counter() - start
 
-            joints = pose.process(frame, int(t * 1000))
+            joints, world = pose.process_with_world(frame, int(t * 1000))
             if smoothing:
                 joints = smoother(t, joints)
+                world = world_smoother(t, world)
 
-            sender.send(encode_packet(frame_index, t_capture_ms, joints))
+            sender.send(encode_packet(frame_index, t_capture_ms, joints, world))
             frame_index += 1
 
             # The preview shows exactly what is sent.
@@ -60,6 +62,7 @@ def main() -> None:
             if key == ord("s"):
                 smoothing = not smoothing
                 smoother.reset()   # start fresh, don't blend with an old pose
+                world_smoother.reset()
     finally:
         sender.close()
         pose.close()
